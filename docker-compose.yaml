@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+
+  cloud:
+    image: nats
+    ports:
+      - "1883:1883"
+      - "4222:4222"
+      - "8222:8222"
+    volumes:
+      - ./config/cloud.conf:/home/config/config.conf
+      - ./config/accounts.conf:/home/config/accounts.conf
+    networks:
+      - cloud
+    command: "--js -c /home/config/config.conf"
+  
+  mid:
+    image: nats
+    ports:
+      - "4223:4222"
+    volumes:
+      - ./config/mid.conf:/home/config/config.conf
+      - ./config/accounts.conf:/home/config/accounts.conf
+    networks:
+      - cloud
+      - edge
+    command: "--js -c /home/config/config.conf"
+
+  edge:
+    image: nats
+    ports:
+      - "4224:4222"
+    volumes:
+      - ./config/edge.conf:/home/config/config.conf
+      - ./config/accounts.conf:/home/config/accounts.conf
+    networks:
+      - edge
+    command: "--js -c /home/config/config.conf"
+
+  mosquitto:
+    image: eclipse-mosquitto
+    networks:
+      - edge
+
+networks:
+  cloud: {}
+  edge: {}
