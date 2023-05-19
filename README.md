@@ -1,4 +1,8 @@
-# NATS Playground Commands
+# NATS Playground
+
+![](./resources/network.png)
+
+## Environment
 
     docker compose up -d
     docker compose down
