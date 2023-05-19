@@ -38,9 +38,12 @@
 
     nats pub ts.yess --count=10000 "publication #{{Count}} @ {{TimeStamp}}"
 
-## Publish MQTT From Edge
+## Publish MQTT From Edge - Receive in Cloud
 
-    docker compose exec -it mosquitto /bin/sh
+    docker compose exec -it mosquitto-cloud /bin/sh
+    mosquitto_sub -h cloud -u acc -P acc -t ts/mqtt
+
+    docker compose exec -it mosquitto-edge /bin/sh
     mosquitto_pub -h edge -u acc -P acc -t ts/mqtt -q 1 -m hello
 
 ## Stop and Start Servers
@@ -48,9 +51,7 @@
     nats pub ts.yess --count=10000 --sleep 5ms "publication #{{Count}} @ {{TimeStamp}}"
 
     docker compose stop mid
-
     docker compose start mid
 
     docker compose stop cloud
-
     docker compose start cloud

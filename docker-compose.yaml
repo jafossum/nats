@@ -38,10 +38,15 @@ services:
       - edge
     command: "--js -c /home/config/config.conf"
 
-  mosquitto:
+  mosquitto-edge:
     image: eclipse-mosquitto
     networks:
       - edge
+
+  mosquitto-cloud:
+    image: eclipse-mosquitto
+    networks:
+      - cloud
 
 networks:
   cloud: {}
