@@ -1,6 +1,6 @@
 {
   "config": {
-    "name": "timeseries",
+    "name": "timeseries-cloud",
     "retention": "limits",
     "max_consumers": -1,
     "max_msgs_per_subject": -1,

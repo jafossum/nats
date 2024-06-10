@@ -22,25 +22,27 @@
     nats stream add --js-domain cloud --context demo-cloud --source timeseries-mid
 
 
-    nats stream info --js-domain cloud timeseries -j > streams/cloud-stream.json
-    nats stream info --js-domain mid timeseries-mid -j > streams/mid-stream.json
-    nats stream info --js-domain edge timeseries -j > streams/edge-stream.json
+    nats stream info --js-domain cloud timeseries -j > cloud/cloud-stream.json
+    nats stream info --js-domain mid timeseries-mid -j > mid/mid-stream.json
+    nats stream info --js-domain edge timeseries -j > edge/edge-stream.json
 
 
-    nats stream add --config=./streams/edge-stream.json --js-domain edge --context demo-edge
-    nats stream add --config=./streams/mid-stream.json --js-domain mid --context demo-mid
-    nats stream add --config=./streams/cloud-stream.json --js-domain cloud --context demo-cloud
+    nats stream add --config=./edge/edge-stream.json --js-domain edge --context demo-edge
+    nats stream add --config=./mid/mid-stream.json --js-domain mid --context demo-mid
+    nats stream add --config=./cloud/cloud-stream.json --js-domain cloud --context demo-cloud
 
 
     watch -n 1 nats stream report --context demo-cloud
     watch -n 1 nats stream report --context demo-mid
     watch -n 1 nats stream report --context demo-edge
 
-## Publish Messages
+## Publish and Subscribe to Messages
 
     nats pub ts.yess --count=1000 --sleep 10ms "publication #{{Count}} @ {{TimeStamp}}"
 
     nats pub ts.yess --count=10000 "publication #{{Count}} @ {{TimeStamp}}"
+
+    nats sub --context demo-cloud "ts.*"
 
 ## Publish MQTT From Edge - Receive in Cloud
 
@@ -51,8 +53,6 @@
     mosquitto_pub -h edge -u acc -P acc -t ts/mqtt -q 1 -m hello
 
 ## Stop and Start Servers
-
-    nats pub ts.yess --count=10000 --sleep 5ms "publication #{{Count}} @ {{TimeStamp}}"
 
     docker compose stop mid
     docker compose start mid
