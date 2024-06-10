@@ -1,6 +1,6 @@
-version: '3.9'
-
 services:
+
+## NATS Servers
 
   cloud:
     image: nats
@@ -9,10 +9,11 @@ services:
       - "4222:4222"
       - "8222:8222"
     volumes:
-      - ./config/cloud.conf:/home/config/config.conf
-      - ./config/accounts.conf:/home/config/accounts.conf
+      - ./cloud/cloud.conf:/home/config/config.conf
+      - ./cloud/accounts.conf:/home/config/accounts.conf
     networks:
       - cloud
+    restart: unless-stopped
     command: "--js -c /home/config/config.conf"
   
   mid:
@@ -20,11 +21,13 @@ services:
     ports:
       - "4223:4222"
     volumes:
-      - ./config/mid.conf:/home/config/config.conf
-      - ./config/accounts.conf:/home/config/accounts.conf
+      - ./mid/mid.conf:/home/config/config.conf
+      - ./mid/accounts.conf:/home/config/accounts.conf
     networks:
       - cloud
+      - mid
       - edge
+    restart: unless-stopped
     command: "--js -c /home/config/config.conf"
 
   edge:
@@ -32,11 +35,15 @@ services:
     ports:
       - "4224:4222"
     volumes:
-      - ./config/edge.conf:/home/config/config.conf
-      - ./config/accounts.conf:/home/config/accounts.conf
+      - ./edge/edge.conf:/home/config/config.conf
+      - ./edge/accounts.conf:/home/config/accounts.conf
     networks:
+      - mid
       - edge
+    restart: unless-stopped
     command: "--js -c /home/config/config.conf"
+
+## MQTT PUB / SUB Demo
 
   mosquitto-edge:
     image: eclipse-mosquitto
@@ -48,6 +55,90 @@ services:
     networks:
       - cloud
 
+## NATS Exporters
+
+  exporter-cloud:
+    image: natsio/prometheus-nats-exporter
+    networks:
+      - cloud
+    restart: unless-stopped
+    command: "-varz -jsz=all http://cloud:8222"
+  
+  exporter-mid:
+    image: natsio/prometheus-nats-exporter
+    networks:
+      - mid
+    restart: unless-stopped
+    command: "-varz -jsz=all http://mid:8222"
+  
+  exporter-edge:
+    image: natsio/prometheus-nats-exporter
+    networks:
+      - edge
+    restart: unless-stopped
+    command: "-varz -jsz=all http://edge:8222"
+
+## Vector
+
+  vector-cloud:
+    image: timberio/vector:0.38.0-debian
+    ports:
+      - "8688:8686"
+    networks:
+      - cloud
+    volumes:
+      - ./cloud/vector-cloud.toml:/etc/vector/vector.toml:ro
+    restart: unless-stopped
+    command: "--config /etc/vector/vector.toml"
+
+  vector-mid:
+    image: timberio/vector:0.38.0-debian
+    ports:
+      - "8687:8686"
+    networks:
+      - edge
+      - mid
+      - cloud
+    volumes:
+      - ./mid/vector-mid.toml:/etc/vector/vector.toml:ro
+    restart: unless-stopped
+    command: "--config /etc/vector/vector.toml"
+
+  vector-edge:
+    image: timberio/vector:0.38.0-debian
+    ports:
+      - "8686:8686"
+    networks:
+      - edge
+      - mid
+    volumes:
+      - ./edge/vector-edge.toml:/etc/vector/vector.toml:ro
+    restart: unless-stopped
+    command: "--config /etc/vector/vector.toml"
+
+## Monitoring
+
+  prom:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - cloud
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana-oss
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=nats
+      - GF_SECURITY_ADMIN_PASSWORD=nats
+    networks:
+      - cloud
+
 networks:
   cloud: {}
   edge: {}
+  mid: {}

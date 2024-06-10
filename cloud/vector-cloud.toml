@@ -1,0 +1,26 @@
+[api]
+enabled = true
+address = "0.0.0.0:8686"
+
+[sources.internal_metrics]
+type = "internal_metrics"
+
+[sources.metrics]
+type = "prometheus_scrape"
+endpoints = ["http://exporter-cloud:7777/metrics"]
+
+[sources.vector-cloud]
+type = "vector"
+address = "0.0.0.0:6000"
+
+# SINKS
+
+[sinks.prometheus]
+type = "prometheus_exporter"
+inputs = ["internal_metrics", "metrics", "vector-cloud"]
+address = "0.0.0.0:7777"
+
+[sinks.log-console]
+inputs = ["internal_metrics", "metrics", "vector-cloud"]
+encoding.codec = "text"
+type = "console"
