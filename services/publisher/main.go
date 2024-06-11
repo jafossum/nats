@@ -17,7 +17,7 @@ import (
 )
 
 func main() {
-	var nUrl = flag.String("u", "nats://acc:acc@localhost:4222", "URL for Nats server to publish to")
+	var nUrl = flag.String("u", "nats://acc:acc@localhost:4224", "URL for Nats server to publish to")
 	flag.Parse()
 
 	// Use signal exit
