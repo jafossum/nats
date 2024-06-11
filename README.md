@@ -44,6 +44,12 @@
 
     nats sub --context demo-cloud "ts.*"
 
+## Run Example GOlang Publisher
+
+    cd services/publisher/
+
+    go run .
+
 ## Publish MQTT From Edge - Receive in Cloud
 
     docker compose exec -it mosquitto-cloud /bin/sh
