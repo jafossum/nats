@@ -9,7 +9,11 @@ type = "internal_metrics"
 
 [sources.metrics]
 type = "prometheus_scrape"
-endpoints = ["http://exporter-edge:7777/metrics"]
+endpoints = [
+    "http://exporter-edge:7777/metrics",
+    "http://host.docker.internal:8888/metrics",
+]
+endpoint_tag = "vector_target"
 
 # SINKS
 
